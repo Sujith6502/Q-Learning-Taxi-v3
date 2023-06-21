@@ -17,6 +17,8 @@ The Reinforcement Learning process using q-learning was applied and tested under
 
 ## Getting Started
 
+
+
 Make sure you have Python 3.8 or higher installed. Then, install the required packages using the following command.
 
 ```bash
