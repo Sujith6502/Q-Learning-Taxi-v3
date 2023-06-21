@@ -23,14 +23,3 @@ Make sure you have Python 3.8 or higher installed. Then, install the required pa
 pip install gym numpy matplotlib
 ```
 
-## Contribution
-
-- 200110P - N. Y. D. De Silva
-- 200421U - D. A. Niles
-- 200490D - V. P. Pussewela
-- 200730P - W. A. D. O. R. Wijesooriya
-
-## References
-
-- Official documentation for the Taxi environemnt : https://www.gymlibrary.dev/environments/toy_text/taxi/
-- Tutorial on OpenAI Gym Taxi : https://www.gocoder.one/blog/rl-tutorial-with-openai-gym
