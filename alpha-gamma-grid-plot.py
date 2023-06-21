@@ -6,6 +6,8 @@ import numpy as np
 import gym
 import random
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 x_cords = []
 y_cords = []
@@ -29,12 +31,10 @@ def taxi_env(learning_rate, discount_rate):
     max_steps = 99 # per episode
 
     # training
-    episodes_to_conv = 0
     for episode in range(num_episodes):
 
         cumml_reward = 0
         count = 0
-        max_change = 0
 
         # reset the environment
         state = env.reset()
@@ -55,17 +55,8 @@ def taxi_env(learning_rate, discount_rate):
             
             cumml_reward += reward
 
-            # old q value to be recorded to comapre later
-            old_q_val = qtable[state,action]
-
             # Q-learning algorithm
             qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
-
-            # change in the value of qtable
-            change = abs(qtable[state,action] - old_q_val)
-
-            if change > max_change:
-                max_change = change
 
             # Update to our new state
             state = new_state
@@ -76,70 +67,40 @@ def taxi_env(learning_rate, discount_rate):
             if done == True:
                 break
         
+        learnings.append(learning_rate)
+        discounts.append(discount_rate)
         x_cords.append(episode)
         y_cords.append(cumml_reward)
 
-        if max_change > 0.000000000001:
-            episodes_to_conv += 1
-        else:
-            break
-
         # Decrease epsilon (Beacause as we train the agent, we want it to exploit more while exploring less)
         epsilon = np.exp(-decay_rate*episode)
-    
-    return episodes_to_conv
-
-    # print(f"Training completed over {num_episodes} episodes")
-    # input("Press Enter to watch trained agent...")
-
-    # # watch trained agent
-    # state = env.reset()
-    # done = False
-    # rewards = 0
-
-    # for s in range(max_steps):
-
-    #     print(f"TRAINED AGENT")
-    #     print("Step {}".format(s+1))
-
-    #     action = np.argmax(qtable[state,:])
-    #     new_state, reward, done, info = env.step(action)
-    #     rewards += reward
-    #     env.render()
-    #     print(f"score: {rewards}")
-    #     state = new_state
-
-    #     if done == True:
-    #         break
 
     env.close()
 
 if __name__ == "__main__":
 
-    learning_rate = 0.8
-    discount_rates = [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]
-    converging_numbers = []
+    learning_rates = [1, 0.8, 0.6, 0.4, 0.2]
+    discount_rates = [1, 0.8, 0.6, 0.4, 0.2]
 
-    for discount_rate in discount_rates:
-        print(discount_rate)
+    learnings = []
+    discounts = []
+    x_cords = []
+    y_cords = []
 
-        episodes_to_converge = taxi_env(learning_rate, discount_rate)
-        # print(episodes_to_converge)
-        converging_numbers.append(episodes_to_converge)
+    for learning_rate in learning_rates:
+        for discount_rate in discount_rates:
+            print(learning_rate,discount_rate)
+            
+            taxi_env(learning_rate, discount_rate)
+            
+    lists = [learnings, discounts, x_cords, y_cords]
+    df = pd.concat([pd.Series(x) for x in lists], axis =1)
 
-    # plt.scatter(x_cords, y_cords)
-    print(discount_rates)
-    print(converging_numbers)
+    df.rename(columns = {0:'Learning Rate'}, inplace = True)
+    df.rename(columns = {1:'Discount Rate'}, inplace = True)
+    df.rename(columns = {2:'Episode Number'}, inplace = True)
+    df.rename(columns = {3:'Cumulative Reward'}, inplace = True)
 
-    # myline = np.linspace(1, len(learning_rates), 1)
-
-    plt.plot(discount_rates, converging_numbers)
-    
-    # plt.plot(x_cords, y_cords, label = "alpha = " + str(learning_rate))
-    plt.xlabel('Discount rate applied')
-    plt.ylabel('Number of episodes required for convergence')
-
-    plt.title('Convergence vs Discount Rate')
-    # plt.legend()
+    sea = sns.FacetGrid(df, col = 'Learning Rate', row ='Discount Rate')
+    sea.map(sns.lineplot, 'Episode Number', 'Cumulative Reward', color = ".3")
     plt.show()
-    

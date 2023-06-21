@@ -98,11 +98,11 @@ def taxi_env(learning_rate, discount_rate):
 
 if __name__ == "__main__":
 
-    learning_rates = [1, 0.8, 0.6, 0.4, 0.2, 0]
-    discount_rate = 0.8
+    learning_rate = 0.9
+    discount_rates = [1, 0.8, 0.6, 0.4, 0.2, 0]
 
-    for learning_rate in learning_rates:
-        print(learning_rate)
+    for discount_rate in discount_rates:
+        print(discount_rate)
         x_cords = []
         y_cords = []
 
@@ -113,9 +113,9 @@ if __name__ == "__main__":
         myline = np.linspace(1, 1000, 100)
 
         # plt.scatter(x_cords, y_cords)
-        plt.plot(myline, mymodel(myline), label = "alpha = " + str(learning_rate))
+        plt.plot(myline, mymodel(myline), label = "gamma = " + str(discount_rate))
         
-        # plt.plot(x_cords, y_cords, label = "alpha = " + str(learning_rate))
+        # plt.plot(x_cords, y_cords, label = "gamma = " + str(discount_rate))
         plt.xlabel('No of episodes')
         plt.ylabel('Cumulative reward')
 

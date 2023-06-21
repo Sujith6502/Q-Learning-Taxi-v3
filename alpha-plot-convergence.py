@@ -29,10 +29,12 @@ def taxi_env(learning_rate, discount_rate):
     max_steps = 99 # per episode
 
     # training
+    episodes_to_conv = 0
     for episode in range(num_episodes):
 
         cumml_reward = 0
         count = 0
+        max_change = 0
 
         # reset the environment
         state = env.reset()
@@ -53,8 +55,17 @@ def taxi_env(learning_rate, discount_rate):
             
             cumml_reward += reward
 
+            # old q value to be recorded to comapre later
+            old_q_val = qtable[state,action]
+
             # Q-learning algorithm
             qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
+
+            # change in the value of qtable
+            change = abs(qtable[state,action] - old_q_val)
+
+            if change > max_change:
+                max_change = change
 
             # Update to our new state
             state = new_state
@@ -68,8 +79,15 @@ def taxi_env(learning_rate, discount_rate):
         x_cords.append(episode)
         y_cords.append(cumml_reward)
 
+        if max_change > 0.000000000001:
+            episodes_to_conv += 1
+        else:
+            break
+
         # Decrease epsilon (Beacause as we train the agent, we want it to exploit more while exploring less)
         epsilon = np.exp(-decay_rate*episode)
+    
+    return episodes_to_conv
 
     # print(f"Training completed over {num_episodes} episodes")
     # input("Press Enter to watch trained agent...")
@@ -98,27 +116,30 @@ def taxi_env(learning_rate, discount_rate):
 
 if __name__ == "__main__":
 
-    learning_rates = [1, 0.8, 0.6, 0.4, 0.2, 0]
+    learning_rates = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0]
     discount_rate = 0.8
+    converging_numbers = []
 
     for learning_rate in learning_rates:
         print(learning_rate)
-        x_cords = []
-        y_cords = []
 
-        taxi_env(learning_rate, discount_rate)
+        episodes_to_converge = taxi_env(learning_rate, discount_rate)
+        # print(episodes_to_converge)
+        converging_numbers.append(episodes_to_converge)
 
-        mymodel = np.poly1d(np.polyfit(x_cords, y_cords, 7))
+    # plt.scatter(x_cords, y_cords)
+    print(learning_rates)
+    print(converging_numbers)
 
-        myline = np.linspace(1, 1000, 100)
+    # myline = np.linspace(1, len(learning_rates), 1)
 
-        # plt.scatter(x_cords, y_cords)
-        plt.plot(myline, mymodel(myline), label = "alpha = " + str(learning_rate))
-        
-        # plt.plot(x_cords, y_cords, label = "alpha = " + str(learning_rate))
-        plt.xlabel('No of episodes')
-        plt.ylabel('Cumulative reward')
+    plt.plot(learning_rates, converging_numbers)
+    
+    # plt.plot(x_cords, y_cords, label = "alpha = " + str(learning_rate))
+    plt.xlabel('Learning rate applied')
+    plt.ylabel('Number of episodes required for convergence')
 
-    plt.title('Reward vs Episodes')
-    plt.legend()
+    plt.title('Convergence vs Learning Rate')
+    # plt.legend()
     plt.show()
+    
